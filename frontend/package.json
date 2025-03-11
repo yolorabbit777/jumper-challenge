@@ -14,7 +14,11 @@
     "@emotion/styled": "^11.11.5",
     "@mui/material": "^5.15.16",
     "@mui/material-nextjs": "^5.15.11",
+    "@reown/appkit": "^1.6.9",
+    "@reown/appkit-adapter-ethers": "^1.6.9",
+    "ethers": "^6.13.5",
     "next": "14.2.3",
+    "pino-pretty": "^13.0.0",
     "react": "^18",
     "react-dom": "^18"
   },
