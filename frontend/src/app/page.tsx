@@ -1,15 +1,29 @@
-import { Box, Typography } from "@mui/material";
+'use client';
+
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { TokensList } from '@/components/Tokens/TokensList';
-import Image from "next/image";
 
 export default function Home() {
-  return (
-    <Box display="flex" flexDirection="column" alignItems="center">
-      <Typography sx={{ mt: '50px' }} variant="h1">Tokens List</Typography>
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-      <Box sx={{ maxWidth: 800, margin: '100px auto' }}>
-        <TokensList />
-      </Box>
+  return (
+    <Box>
+      <Typography
+        variant={isMobile ? "h5" : "h4"}
+        component="h1"
+        align="center"
+        gutterBottom
+        sx={{
+          fontWeight: 700,
+          mt: 5,
+          mb: { xs: 2, sm: 4 },
+          color: 'text.primary',
+        }}
+      >
+        Your Token Balances
+      </Typography>
+      <TokensList />
     </Box>
   );
 }

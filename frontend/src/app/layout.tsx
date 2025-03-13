@@ -1,8 +1,6 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import darkTheme from '@/theme';
 import { Header } from '@/components/Layout/Header';
 import { AppProvider } from '@/context';
 
