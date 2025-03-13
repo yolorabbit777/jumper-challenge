@@ -8,6 +8,7 @@ import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { handleServiceResponse } from '@/common/utils/httpHandlers';
 import { env } from '@/common/utils/envConfig';
+import { JWT_COOKIE_PREFIX } from '@/constants';
 
 export const sessionRegistry = new OpenAPIRegistry();
 
@@ -47,7 +48,7 @@ export const sessionRouter: Router = (() => {
 
       // Check all cookies for a valid JWT token
       for (const [key, value] of Object.entries(cookies)) {
-        if (key.startsWith('jwtToken_')) {
+        if (key.startsWith(JWT_COOKIE_PREFIX)) {
           try {
             const decoded = jwt.verify(value, env.JWT_SECRET) as { address: string };
             // Verify that the decoded address matches the provided address

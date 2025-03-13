@@ -3,10 +3,22 @@ import { useCallback } from 'react';
 import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 import { createAccount as createAccountService } from '@/services/createAccount';
 import { Eip1193Provider } from 'ethers';
+import { useJWT } from '@/context/JWTContext';
+import axios from 'axios';
+
+interface Token {
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  balance: string;
+  network: string;
+}
 
 export const useActions = () => {
   const { walletProvider } : { walletProvider: Eip1193Provider} = useAppKitProvider('eip155');
   const { address, isConnected } = useAppKitAccount();
+  const { setIsUpdateSession, isUpdateSession, clearSession } = useJWT();
 
   const getSigner = useCallback(async () => {
     if (!isConnected) return null;
@@ -44,8 +56,7 @@ export const useActions = () => {
       }
 
       await createAccountService(address, signature);
-      // Refresh the page to update JWT context
-      window.location.reload();
+      setIsUpdateSession(!isUpdateSession);
       return true;
     } catch (error) {
       console.error('Failed to create account:', error);
@@ -53,11 +64,30 @@ export const useActions = () => {
     }
   }, [address, signMessage]);
 
+  const fetchTokens = useCallback(async (): Promise<Token[]> => {
+    try {
+      const response = await axios.get('/api/tokens', {
+        params: { address },
+        withCredentials: true
+      });
+
+      if (response.data.success && response.data.responseObject) {
+        return response.data.responseObject;
+      }
+      return [];
+    } catch (error) {
+      setIsUpdateSession(!isUpdateSession);
+      console.error('Failed to fetch tokens:', error);
+      throw error;
+    }
+  }, [address]);
+
   return {
     address,
     isConnected,
     getSigner,
     signMessage,
-    createAccount
+    createAccount,
+    fetchTokens
   };
 };

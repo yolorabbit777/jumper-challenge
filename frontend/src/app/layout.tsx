@@ -1,11 +1,10 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from '@mui/material/styles';
-import theme from '../theme';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import darkTheme from '@/theme';
 import { Header } from '@/components/Layout/Header';
-import { AppKitProvider } from '@/context/AppKit';
-import { JWTContextProvider } from '@/context/JWTContext';
+import { AppProvider } from '@/context';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,16 +22,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className} style={{ margin: '0px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
         <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <AppKitProvider>
-              <JWTContextProvider>
-                <Header />
-                {children}
-              </JWTContextProvider>
-            </AppKitProvider>
-          </ThemeProvider>
+          <AppProvider>
+            <Header />
+            {children}
+          </AppProvider>
         </AppRouterCacheProvider>
-        </body>
+      </body>
     </html>
   );
 }

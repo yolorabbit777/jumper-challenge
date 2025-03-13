@@ -1,8 +1,24 @@
 'use client';
 import { useEffect, useState } from "react";
-import { Box, TableContainer, Typography, Paper, Table, TableHead, TableCell, TableBody, TableRow, Button } from '@mui/material';
+import { 
+  Box, 
+  TableContainer, 
+  Typography, 
+  Paper, 
+  Table, 
+  TableHead, 
+  TableCell, 
+  TableBody, 
+  TableRow, 
+  Button,
+  CircularProgress,
+  useTheme,
+  Chip
+} from '@mui/material';
 import { useActions } from "@/hooks/useActions";
 import { useJWT } from '@/context/JWTContext';
+import { formatAddress } from '@/utils';
+import { toast } from 'react-toastify';
 
 interface Token {
   address: string;
@@ -14,30 +30,27 @@ interface Token {
 }
 
 export const TokensList = () => {
+  const theme = useTheme();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { isAuthenticated, authenticatedAddress, isLoading: isAuthLoading } = useJWT();
-  const { isConnected, createAccount } = useActions();
+  const { isAuthenticated, isLoading: isAuthLoading } = useJWT();
+  const { isConnected, createAccount, fetchTokens } = useActions();
 
-  const fetchTokens = async (address: string) => {
+  const handleFetchTokens = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      const response = await fetch(`/api/tokens/${address}`, {
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch tokens');
+      const fetchedTokens = await fetchTokens();
+      setTokens(fetchedTokens);
+      if (fetchedTokens.length === 0) {
+        toast.info('No tokens found for this address');
       }
-      
-      const data = await response.json();
-      setTokens(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch tokens');
+      const message = err instanceof Error ? err.message : 'Failed to fetch tokens';
+    //   toast.error(message);
+      setError(message);
       setTokens([]);
     } finally {
       setIsLoading(false);
@@ -49,77 +62,95 @@ export const TokensList = () => {
       setIsLoading(true);
       setError(null);
       await createAccount();
+      toast.success('Account created successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      const message = err instanceof Error ? err.message : 'Failed to create account';
+      toast.error(message);
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isAuthenticated && authenticatedAddress) {
-      fetchTokens(authenticatedAddress);
+    if (isAuthenticated) {
+      handleFetchTokens();
     }
-  }, [isAuthenticated, authenticatedAddress]);
+  }, [isAuthenticated]);
 
   if (isAuthLoading || isLoading) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="200px"
+        sx={{ color: 'text.primary' }}
+      >
+        <CircularProgress color="primary" />
+      </Box>
+    );
   }
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center">
+    <Box sx={{ 
+      p: 3,
+      maxWidth: 1200,
+      mx: 'auto',
+      width: '100%'
+    }}>
       {!isAuthenticated && isConnected && (
-        <Button onClick={handleCreateAccount}>Create Account</Button>
-      )}
-      
-      {error && (
-        <Typography color="error" sx={{ mt: 2 }}>
-          {error}
-        </Typography>
+        <Button 
+          onClick={handleCreateAccount}
+          variant="contained"
+          size="large"
+        >
+          Create Account
+        </Button>
       )}
 
       {isAuthenticated && (
-        <TableContainer component={Paper} elevation={3} sx={{ mt: 2, overflowX: 'auto' }}>
-          <Table sx={{ width: '800px' }}>
-            <TableHead sx={{ backgroundColor: '#1976D2' }}>
+        <TableContainer component={Paper} sx={{ mt: 2, minWidth: 700 }}>
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell align='center'>
-                  <Typography variant="subtitle1" color="white" fontWeight='bold'>
-                    Name
-                  </Typography>
-                </TableCell>
-                <TableCell align='center'>
-                  <Typography variant="subtitle1" color="white" fontWeight='bold'>
-                    Symbol
-                  </Typography>
-                </TableCell>
-                <TableCell align='center'>
-                  <Typography variant="subtitle1" color="white" fontWeight='bold'>
-                    Balance
-                  </Typography>
-                </TableCell>
-                <TableCell align='center'>
-                  <Typography variant="subtitle1" color="white" fontWeight='bold'>
-                    Network
-                  </Typography>
-                </TableCell>
-                <TableCell align='center'>
-                  <Typography variant="subtitle1" color="white" fontWeight='bold'>
-                    Address
-                  </Typography>
-                </TableCell>
+                <TableCell align='center'>Name</TableCell>
+                <TableCell align='center'>Symbol</TableCell>
+                <TableCell align='center'>Balance</TableCell>
+                <TableCell align='center'>Network</TableCell>
+                <TableCell align='center'>Address</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {tokens.map((token) => (
-                <TableRow key={token.address}>
-                  <TableCell align="center">{token.name}</TableCell>
-                  <TableCell align="center">{token.symbol}</TableCell>
-                  <TableCell align="center">{token.balance}</TableCell>
-                  <TableCell align="center">{token.network}</TableCell>
-                  <TableCell align="center">{token.address}</TableCell>
+              {tokens.length > 0 ? (
+                tokens.map((token) => (
+                  <TableRow key={token.address}>
+                    <TableCell align="center">{token.name}</TableCell>
+                    <TableCell align="center">{token.symbol}</TableCell>
+                    <TableCell align="center">{token.balance}</TableCell>
+                    <TableCell align="center">
+                      <Chip label={token.network} />
+                    </TableCell>
+                    <TableCell align="center">
+                      {formatAddress(token.address)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell 
+                    colSpan={5} 
+                    align="center"
+                    sx={{ 
+                      py: 8,
+                      color: 'text.secondary',
+                      fontSize: '1rem'
+                    }}
+                  >
+                    No Token Balances
+                  </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>

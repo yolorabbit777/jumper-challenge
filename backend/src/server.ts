@@ -5,13 +5,14 @@ import { pino } from 'pino';
 
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { authRouter } from '@/api/auth/authRouter';
+import { sessionRouter } from './api/session/sessionRouter';
 import { openAPIRouter } from '@/api-docs/openAPIRouter';
 import errorHandler from '@/common/middleware/errorHandler';
 import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 import cookieParser from 'cookie-parser';
-import { sessionRouter } from './api/session/sessionRouter';
+import { tokensRouter } from '@/api/tokens/tokensRouter';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -34,6 +35,7 @@ app.use(requestLogger);
 app.use('/health-check', healthCheckRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/session', sessionRouter);
+app.use('/api/tokens', tokensRouter);
 
 // Swagger UI
 app.use(openAPIRouter);

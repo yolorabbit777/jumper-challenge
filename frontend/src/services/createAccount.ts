@@ -9,11 +9,11 @@ export const createAccount = async (address: string, signature: string) => {
       withCredentials: true // Important for cookies
     });
 
-    if (response.data.status === 'Success') {
+    if (response.data.status === true) {
       return true;
     }
 
-    throw new Error(response.data.message || 'Failed to create account');
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       console.error('Account creation failed:', error.response.data.message);

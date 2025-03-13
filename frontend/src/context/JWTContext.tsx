@@ -3,11 +3,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAppKitAccount } from "@reown/appkit/react";
+import { toast } from 'react-toastify';
 
 interface JWTContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   authenticatedAddress: string | null;
+  isUpdateSession: boolean;
+  setIsUpdateSession: (isUpdateSession: boolean) => void;
   clearSession: () => void;
 }
 
@@ -15,12 +18,15 @@ const JWTContext = createContext<JWTContextType>({
   isAuthenticated: false,
   isLoading: true,
   authenticatedAddress: null,
+  isUpdateSession: false,
+  setIsUpdateSession: () => {},
   clearSession: () => {},
 });
 
 export const JWTContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdateSession, setIsUpdateSession] = useState(false);
   const [authenticatedAddress, setAuthenticatedAddress] = useState<string | null>(null);
   const { address, isConnected } = useAppKitAccount();
 
@@ -38,20 +44,20 @@ export const JWTContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         { address },
         { withCredentials: true }
       );
-
-      if (response.data.status === 'Success' && response.data.data.isValid && response.data.data.address) {
+ 
+      if (response.data.success === true && response.data.responseObject.isValid && response.data.responseObject.address) {
         setIsAuthenticated(true);
-        setAuthenticatedAddress(response.data.data.address);
+        setAuthenticatedAddress(response.data.responseObject.address);
       } else {
         setIsAuthenticated(false);
         setAuthenticatedAddress(null);
+        toast.info('Please create an account to view tokens');
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Failed to verify session:', error.response?.data?.message || error.message);
-      } else {
-        console.error('Failed to verify session:', error);
-      }
+      const message = axios.isAxiosError(error) 
+        ? error.response?.data?.message || error.message
+        : 'Failed to verify session';
+      toast.error(message);
       setIsAuthenticated(false);
       setAuthenticatedAddress(null);
     } finally {
@@ -64,9 +70,10 @@ export const JWTContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setAuthenticatedAddress(null);
   };
 
+  // Verify session on mount and when address/connection changes
   useEffect(() => {
     verifySession();
-  }, [address, isConnected]); // Re-verify when address or connection status changes
+  }, [address, isConnected, isUpdateSession]);
 
   return (
     <JWTContext.Provider
@@ -75,6 +82,8 @@ export const JWTContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isLoading,
         authenticatedAddress,
         clearSession,
+        isUpdateSession,
+        setIsUpdateSession,
       }}
     >
       {children}
