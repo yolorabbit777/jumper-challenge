@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { 
   Box, 
   TableContainer, 
@@ -38,7 +38,9 @@ export const TokensList = () => {
   const { isAuthenticated, isLoading: isAuthLoading } = useJWT();
   const { isConnected, createAccount, fetchTokens } = useActions();
 
-  const handleFetchTokens = async () => {
+  const handleFetchTokens = useCallback(async () => {
+    if(!isAuthenticated) return;
+
     try {
       setIsLoading(true);
       setError(null);
@@ -55,7 +57,7 @@ export const TokensList = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isAuthenticated, fetchTokens]);
 
   const handleCreateAccount = async () => {
     try {
@@ -73,10 +75,8 @@ export const TokensList = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      handleFetchTokens();
-    }
-  }, [isAuthenticated]);
+    handleFetchTokens();
+  }, [handleFetchTokens]);
 
   if (isAuthLoading || isLoading) {
     return (

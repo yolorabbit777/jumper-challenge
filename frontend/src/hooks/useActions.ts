@@ -31,7 +31,7 @@ export const useActions = () => {
       console.error('Failed to get signer:', error);
       return null;
     }
-  }, [isConnected]);
+  }, [isConnected, walletProvider]);
 
   const signMessage = useCallback(async (message: string): Promise<string | null> => {
     try {
@@ -62,7 +62,7 @@ export const useActions = () => {
       console.error('Failed to create account:', error);
       throw error;
     }
-  }, [address, signMessage]);
+  }, [address, signMessage, isUpdateSession, setIsUpdateSession]);
 
   const fetchTokens = useCallback(async (): Promise<Token[]> => {
     try {
@@ -80,7 +80,7 @@ export const useActions = () => {
       console.error('Failed to fetch tokens:', error);
       throw error;
     }
-  }, [address]);
+  }, [address, isUpdateSession, setIsUpdateSession]);
 
   return {
     address,

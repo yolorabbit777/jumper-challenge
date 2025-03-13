@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useAppKitAccount } from "@reown/appkit/react";
 import { toast } from 'react-toastify';
@@ -30,7 +30,7 @@ export const JWTContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [authenticatedAddress, setAuthenticatedAddress] = useState<string | null>(null);
   const { address, isConnected } = useAppKitAccount();
 
-  const verifySession = async () => {
+  const verifySession = useCallback(async () => {
     try {
       // If not connected or no address, clear authentication
       if (!isConnected || !address) {
@@ -63,7 +63,7 @@ export const JWTContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [address, isConnected]);
 
   const clearSession = () => {
     setIsAuthenticated(false);
@@ -73,7 +73,7 @@ export const JWTContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Verify session on mount and when address/connection changes
   useEffect(() => {
     verifySession();
-  }, [address, isConnected, isUpdateSession]);
+  }, [isUpdateSession, verifySession]);
 
   return (
     <JWTContext.Provider
