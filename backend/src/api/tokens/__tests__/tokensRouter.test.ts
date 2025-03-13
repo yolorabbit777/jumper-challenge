@@ -1,10 +1,11 @@
-import request from 'supertest';
-import express, { Express } from 'express';
-import { tokensRouter } from '@/api/tokens/tokensRouter';
-import { StatusCodes } from 'http-status-codes';
-import { vi } from 'vitest';
-import cookieParser from 'cookie-parser';
 import axios from 'axios';
+import cookieParser from 'cookie-parser';
+import express, { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import request from 'supertest';
+import { vi } from 'vitest';
+
+import { tokensRouter } from '@/api/tokens/tokensRouter';
 
 // mock environment variables for testing
 process.env.JWT_SECRET = 'JWT SECRET';
@@ -43,16 +44,18 @@ describe('Tokens Router', () => {
     mockedAxios.get.mockResolvedValueOnce({
       data: {
         status: '1',
-        result: [{
-          contractAddress: '0xtoken1',
-          tokenName: 'Token1',
-          tokenSymbol: 'TK1',
-          tokenDecimal: '18',
-          value: '1000000000000000000',
-          from: '0x01',
-          to: '0x00'
-        }]
-      }
+        result: [
+          {
+            contractAddress: '0xtoken1',
+            tokenName: 'Token1',
+            tokenSymbol: 'TK1',
+            tokenDecimal: '18',
+            value: '1000000000000000000',
+            from: '0x01',
+            to: '0x00',
+          },
+        ],
+      },
     });
 
     const res = await request(app)
@@ -67,16 +70,14 @@ describe('Tokens Router', () => {
           address: '0xtoken1',
           name: 'Token1',
           symbol: 'TK1',
-          balance: expect.any(String)
-        })
+          balance: expect.any(String),
+        }),
       ])
     );
   });
 
   it('should return 401 for unauthenticated request', async () => {
-    const res = await request(app)
-      .get('/api/tokens')
-      .query({ address: '0x00' });
+    const res = await request(app).get('/api/tokens').query({ address: '0x00' });
 
     expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
     expect(res.body.success).toBe(false);
@@ -108,8 +109,8 @@ describe('Tokens Router', () => {
     mockedAxios.get.mockResolvedValueOnce({
       data: {
         status: '1',
-        result: []
-      }
+        result: [],
+      },
     });
 
     const res = await request(app)
@@ -120,4 +121,4 @@ describe('Tokens Router', () => {
     expect(res.status).toBe(StatusCodes.OK);
     expect(res.body.responseObject).toEqual([]);
   });
-}); 
+});

@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 export interface Token {
   address: string;
   name: string;
@@ -7,6 +5,16 @@ export interface Token {
   balance: string;
   decimals: number;
   network: string;
+}
+
+export interface Transaction {
+  contractAddress: string;
+  tokenName: string;
+  tokenSymbol: string;
+  tokenDecimal: string;
+  value: string;
+  from: string;
+  to: string;
 }
 
 export interface NetworkConfig {
@@ -26,5 +34,5 @@ export interface ServiceResponse<T> {
 
 export enum ResponseStatus {
   Success = 'Success',
-  Failed = 'Failed'
-} 
+  Failed = 'Failed',
+}

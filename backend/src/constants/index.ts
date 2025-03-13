@@ -1,5 +1,5 @@
-import { NetworkConfig } from '@/types';
 import { env } from '@/common/utils/envConfig';
+import { NetworkConfig } from '@/types';
 
 export const SUPPORTED_NETWORKS: NetworkConfig[] = [
   {
@@ -12,14 +12,14 @@ export const SUPPORTED_NETWORKS: NetworkConfig[] = [
     name: 'polygon',
     apiUrl: 'https://api.polygonscan.com/api',
     apiKey: env.POLYGONSCAN_API_KEY,
-    chainid: 137
+    chainid: 137,
   },
   {
     name: 'bsc',
     apiUrl: 'https://api.bscscan.com/api',
     apiKey: env.BSCSCAN_API_KEY,
-    chainid: 56
-  }
+    chainid: 56,
+  },
 ];
 
-export const JWT_COOKIE_PREFIX = 'jwtToken_'; 
+export const JWT_COOKIE_PREFIX = 'jwtToken_';

@@ -1,17 +1,17 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import express, { Request, Response, Router } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import { z } from 'zod';
-import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import { formatUnits } from 'ethers';
+import express, { Request, Response, Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import jwt from 'jsonwebtoken';
+import { z } from 'zod';
 
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
-import { handleServiceResponse } from '@/common/utils/httpHandlers';
 import { env } from '@/common/utils/envConfig';
-import { NetworkConfig, Token } from '@/types';
-import { SUPPORTED_NETWORKS, JWT_COOKIE_PREFIX } from '@/constants';
+import { handleServiceResponse } from '@/common/utils/httpHandlers';
+import { JWT_COOKIE_PREFIX, SUPPORTED_NETWORKS } from '@/constants';
+import { NetworkConfig, Token, Transaction } from '@/types';
 
 export const tokensRegistry = new OpenAPIRegistry();
 
@@ -39,7 +39,10 @@ tokensRegistry.registerPath({
   ),
 });
 
-const getAuthenticatedAddress = (cookies: { [key: string]: string }, address: string): string | null => {
+const getAuthenticatedAddress = (
+  cookies: { [key: string]: string },
+  address: string
+): string | null => {
   for (const [key, value] of Object.entries(cookies)) {
     if (key === `${JWT_COOKIE_PREFIX}${address.toLowerCase()}`) {
       try {
@@ -62,8 +65,8 @@ const fetchTokenBalances = async (address: string, network: NetworkConfig): Prom
         action: 'tokentx',
         address: address,
         sort: 'asc',
-        apikey: network.apiKey
-      }
+        apikey: network.apiKey,
+      },
     });
 
     if (response.data.status !== '1') {
@@ -73,18 +76,21 @@ const fetchTokenBalances = async (address: string, network: NetworkConfig): Prom
       throw new Error(response.data.message || 'Failed to fetch token transactions');
     }
 
-    const tokenBalances = new Map<string, {
-      address: string;
-      name: string;
-      symbol: string;
-      balance: bigint;
-      decimals: number;
-      network: string;
-    }>();
+    const tokenBalances = new Map<
+      string,
+      {
+        address: string;
+        name: string;
+        symbol: string;
+        balance: bigint;
+        decimals: number;
+        network: string;
+      }
+    >();
 
-    response.data.result.forEach((tx: any) => {
+    response.data.result.forEach((tx: Transaction) => {
       const tokenAddress = tx.contractAddress.toLowerCase();
-      
+
       if (!tokenBalances.has(tokenAddress)) {
         tokenBalances.set(tokenAddress, {
           address: tokenAddress,
@@ -92,7 +98,7 @@ const fetchTokenBalances = async (address: string, network: NetworkConfig): Prom
           symbol: tx.tokenSymbol,
           balance: 0n,
           decimals: parseInt(tx.tokenDecimal),
-          network: network.name
+          network: network.name,
         });
       }
 
@@ -109,14 +115,14 @@ const fetchTokenBalances = async (address: string, network: NetworkConfig): Prom
     });
 
     const tokens: Token[] = Array.from(tokenBalances.values())
-      .filter(token => token.balance > 0n)
-      .map(token => ({
+      .filter((token) => token.balance > 0n)
+      .map((token) => ({
         address: token.address,
         name: token.name,
         symbol: token.symbol,
         balance: Number(formatUnits(token.balance, token.decimals)).toFixed(2),
         decimals: token.decimals,
-        network: token.network
+        network: token.network,
       }));
 
     return tokens;
@@ -131,9 +137,9 @@ export const tokensRouter: Router = (() => {
 
   router.get('/', async (req: Request, res: Response) => {
     try {
-    const requestedAddress = (req.query.address as string)?.toLowerCase();
+      const requestedAddress = (req.query.address as string)?.toLowerCase();
       const authenticatedAddress = getAuthenticatedAddress(req.cookies, requestedAddress);
-      
+
       if (!authenticatedAddress) {
         const serviceResponse = new ServiceResponse(
           ResponseStatus.Failed,
@@ -156,7 +162,7 @@ export const tokensRouter: Router = (() => {
       }
 
       // Fetch tokens from all supported networks in parallel
-      const tokensPromises = SUPPORTED_NETWORKS.map(network => 
+      const tokensPromises = SUPPORTED_NETWORKS.map((network) =>
         fetchTokenBalances(authenticatedAddress, network)
       );
 
@@ -183,4 +189,4 @@ export const tokensRouter: Router = (() => {
   });
 
   return router;
-})(); 
+})();

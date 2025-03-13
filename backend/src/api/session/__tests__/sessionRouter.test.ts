@@ -1,9 +1,10 @@
-import request from 'supertest';
-import express, { Express } from 'express';
-import { sessionRouter } from '@/api/session/sessionRouter';
-import { StatusCodes } from 'http-status-codes';
-import { vi } from 'vitest';
 import cookieParser from 'cookie-parser';
+import express, { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import request from 'supertest';
+import { vi } from 'vitest';
+
+import { sessionRouter } from '@/api/session/sessionRouter';
 
 // mock environment variables for testing
 process.env.JWT_SECRET = 'JWT SECRET';
@@ -42,20 +43,18 @@ describe('Session Router', () => {
       .send({ address: '0x00' });
 
     expect(res.status).toBe(StatusCodes.OK);
-    expect(res.body.responseObject).toEqual({     
-        isValid: true,
-        address: '0x00'
+    expect(res.body.responseObject).toEqual({
+      isValid: true,
+      address: '0x00',
     });
   });
 
   it('should return invalid for missing cookie', async () => {
-    const res = await request(app)
-      .post('/api/session/verify')
-      .send({ address: '0x00' });
+    const res = await request(app).post('/api/session/verify').send({ address: '0x00' });
 
     expect(res.status).toBe(StatusCodes.OK);
     expect(res.body.responseObject).toEqual({
-        isValid: false
+      isValid: false,
     });
   });
 
@@ -67,7 +66,7 @@ describe('Session Router', () => {
 
     expect(res.status).toBe(StatusCodes.OK);
     expect(res.body.responseObject).toEqual({
-        isValid: false
+      isValid: false,
     });
   });
 
@@ -79,7 +78,7 @@ describe('Session Router', () => {
 
     expect(res.status).toBe(StatusCodes.OK);
     expect(res.body.responseObject).toEqual({
-        isValid: false
+      isValid: false,
     });
   });
-}); 
+});

@@ -1,9 +1,10 @@
-import request from 'supertest';
-import express, { Express } from 'express';
-import { authRouter } from '@/api/auth/authRouter';
-import { StatusCodes } from 'http-status-codes';
 import { verifyMessage } from 'ethers';
+import express, { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import request from 'supertest';
 import { vi } from 'vitest';
+
+import { authRouter } from '@/api/auth/authRouter';
 
 // mock environment variables for testing
 process.env.SIGN_MESSAGE = 'SIGN MESSAGE';
