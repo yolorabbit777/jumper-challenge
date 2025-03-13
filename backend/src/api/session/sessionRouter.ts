@@ -48,7 +48,7 @@ export const sessionRouter: Router = (() => {
 
       // Check all cookies for a valid JWT token
       for (const [key, value] of Object.entries(cookies)) {
-        if (key.startsWith(JWT_COOKIE_PREFIX)) {
+        if (key === `${JWT_COOKIE_PREFIX}${address.toLowerCase()}`) {
           try {
             const decoded = jwt.verify(value, env.JWT_SECRET) as { address: string };
             // Verify that the decoded address matches the provided address
