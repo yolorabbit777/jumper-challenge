@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from '../theme';
 import { Header } from '@/components/Layout/Header';
 import { AppKitProvider } from '@/context/AppKit';
+import { JWTContextProvider } from '@/context/JWTContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,8 +25,10 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <AppKitProvider>
-              <Header />
-              {children}
+              <JWTContextProvider>
+                <Header />
+                {children}
+              </JWTContextProvider>
             </AppKitProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
